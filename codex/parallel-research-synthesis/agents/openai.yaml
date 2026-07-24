@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parallel Research Synthesis"
+  short_description: "Parallelize research without bloating context"
+  default_prompt: "Use $parallel-research-synthesis to split these sources across read-only subagents and return a compact evidence-backed synthesis."

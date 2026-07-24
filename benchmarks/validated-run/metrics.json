@@ -1,0 +1,29 @@
+{
+  "date": "2026-07-24",
+  "workload": "Two parallel read-only workers compared three large Claude skill artifacts, followed by a dedicated synthesis pass.",
+  "scope": "worker-to-main intermediate handoff only",
+  "tokenizer": "tiktoken:o200k_base",
+  "workers": 2,
+  "sources_reviewed": 3,
+  "worker_findings": 31,
+  "worker_evidence_pointers": 94,
+  "worker_report_bytes": [
+    13311,
+    14784
+  ],
+  "worker_report_characters": 27123,
+  "worker_report_tokens": 7255,
+  "receipt_characters": 641,
+  "receipt_tokens": 170,
+  "tokens_kept_out_of_main_context": 7085,
+  "token_savings_percent": 97.66,
+  "character_savings_percent": 97.64,
+  "synthesis_report_bytes": 13180,
+  "merged_findings": 10,
+  "deliberately_excluded_findings": 0,
+  "notes": [
+    "The required final synthesis is intentionally excluded from the savings calculation because both designs must deliver it.",
+    "This measures main-context pressure, not total API usage or billing.",
+    "Token counts vary by model tokenizer; the character reduction is tokenizer-independent."
+  ]
+}
