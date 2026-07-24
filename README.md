@@ -1,11 +1,11 @@
 <div align="center">
 
-# Parallel Research Synthesis
+# Research Swarm
 
 ### Parallelize information intake without flooding the main agent's context
 
-[![Codex Skill](https://img.shields.io/badge/Codex-Skill-111827?style=flat-square)](./codex/parallel-research-synthesis/SKILL.md)
-[![Claude Code Skill](https://img.shields.io/badge/Claude_Code-Skill-D97757?style=flat-square)](./claude/parallel-research-synthesis/SKILL.md)
+[![Codex Skill](https://img.shields.io/badge/Codex-Skill-111827?style=flat-square)](./skills/research-swarm/SKILL.md)
+[![Claude Code Skill](https://img.shields.io/badge/Claude_Code-Skill-D97757?style=flat-square)](./skills/research-swarm/SKILL.md)
 [![Validated saving](https://img.shields.io/badge/main--context_saving-97.66%25-16A34A?style=flat-square)](./benchmarks/validated-run/metrics.json)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Mert_Çetin-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/mertcetin20/)
 
@@ -15,7 +15,7 @@
 
 ---
 
-`parallel-research-synthesis` is a reusable Codex and Claude Code skill for large research tasks. It divides independent reading across read-only subagents, stores complete worker findings outside the coordinator's conversation, and gives the main agent only compact integrity receipts plus one decision-ready synthesis.
+`research-swarm` is a reusable Codex and Claude Code skill for large research tasks. It divides independent reading across read-only subagents, stores complete worker findings outside the coordinator's conversation, and gives the main agent only compact integrity receipts plus one decision-ready synthesis.
 
 The goal is deliberately narrow:
 
@@ -143,20 +143,16 @@ The run directory must contain `worker-*.md` and `receipt-*.json` files.
 - **Contradiction preservation** rather than majority-voting conflicting claims away.
 - **Bounded concurrency**: normally 2–3 workers, increased only for clean independent lanes.
 - **Graceful partial failure** with explicit coverage gaps.
-- **Codex and Claude Code variants** adapted to each harness.
+- **One universal skill** that adapts its subagent dispatch to Codex or Claude Code.
 
 ## Repository layout
 
 ```text
-parallel-research-synthesis/
-├── codex/
-│   └── parallel-research-synthesis/
+research-swarm/
+├── skills/
+│   └── research-swarm/
 │       ├── SKILL.md
 │       ├── agents/openai.yaml
-│       └── references/
-├── claude/
-│   └── parallel-research-synthesis/
-│       ├── SKILL.md
 │       └── references/
 ├── benchmarks/
 │   └── validated-run/metrics.json
@@ -167,42 +163,57 @@ parallel-research-synthesis/
 
 ## Installation
 
-### Codex
+### Skills CLI
+
+Install from GitHub with automatic agent detection:
 
 ```bash
-mkdir -p ~/.codex/skills/parallel-research-synthesis
-rsync -a codex/parallel-research-synthesis/ \
-  ~/.codex/skills/parallel-research-synthesis/
+npx skills add merttcetn/research-swarm -g
+```
+
+Or select the target explicitly:
+
+```bash
+npx skills add merttcetn/research-swarm -g --agent codex
+npx skills add merttcetn/research-swarm -g --agent claude-code
+```
+
+### Manual installation
+
+Codex:
+
+```bash
+mkdir -p ~/.codex/skills/research-swarm
+rsync -a skills/research-swarm/ ~/.codex/skills/research-swarm/
 ```
 
 Invoke explicitly with:
 
 ```text
-$parallel-research-synthesis
+$research-swarm
 ```
 
-### Claude Code
+Claude Code:
 
 ```bash
-mkdir -p ~/.claude/skills/parallel-research-synthesis
-rsync -a claude/parallel-research-synthesis/ \
-  ~/.claude/skills/parallel-research-synthesis/
+mkdir -p ~/.claude/skills/research-swarm
+rsync -a skills/research-swarm/ ~/.claude/skills/research-swarm/
 ```
 
 Invoke explicitly with:
 
 ```text
-/parallel-research-synthesis
+/research-swarm
 ```
 
-The Claude variant intentionally coordinates from the main thread. Claude Code subagents cannot spawn nested subagents, so putting the entire coordinator in `context: fork` would prevent it from creating research workers. Detailed worker tool activity still remains isolated; only their compact final receipts return to the coordinator.
+The universal skill adapts to the active runtime. In Claude Code it coordinates from the main thread because Claude Code subagents cannot spawn nested subagents. Detailed worker activity remains isolated; only compact receipts return to the coordinator.
 
 ## Usage
 
 ### Analyze one large source through independent lenses
 
 ```text
-$parallel-research-synthesis
+$research-swarm
 
 Analyze this transcript with separate subagents for:
 1. recurring workflows,
@@ -216,7 +227,7 @@ into the main context.
 ### Compare many reports
 
 ```text
-/parallel-research-synthesis
+/research-swarm
 
 Split the reports in ./research across read-only workers. Identify consensus,
 contradictions, unresolved questions, and the five most important decisions.
@@ -226,7 +237,7 @@ Preserve a full synthesis artifact.
 ### Inspect independent repository areas
 
 ```text
-$parallel-research-synthesis
+$research-swarm
 
 Research authentication, data persistence, and API boundaries in parallel.
 Do not edit files. Return a source-linked architecture assessment.
@@ -260,7 +271,7 @@ Work directly when one short source and one narrow question can be answered fast
 Created by **Mert Çetin**.
 
 - [LinkedIn](https://www.linkedin.com/in/mertcetin20/)
-- [GitHub repository](https://github.com/merttcetn/parallel-research-synthesis)
+- [GitHub repository](https://github.com/merttcetn/research-swarm)
 
 ---
 
