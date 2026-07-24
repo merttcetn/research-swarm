@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Swarm"
+  short_description: "Parallelize research without bloating context"
+  default_prompt: "Use $research-swarm to split these sources across read-only subagents and return a compact evidence-backed synthesis."
