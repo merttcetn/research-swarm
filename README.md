@@ -15,7 +15,7 @@
 
 ---
 
-`research-swarm` is a reusable Codex and Claude Code skill for large research tasks. It divides independent reading across read-only subagents, stores complete worker findings outside the coordinator's conversation, and gives the main agent only compact integrity receipts plus one decision-ready synthesis.
+`research-swarm` is a reusable Codex and Claude Code skill for large research tasks. It divides independent reading across read-only subagents, stores complete worker findings only in an ephemeral OS temp workspace, and gives the main agent compact integrity receipts plus one decision-ready synthesis before deleting every temporary report.
 
 The goal is deliberately narrow:
 
@@ -29,53 +29,19 @@ A naive multi-agent research workflow still bloats the coordinator:
 2. Every worker pastes its full report back into the main conversation.
 3. The main agent spends thousands of tokens carrying intermediate detail merely to synthesize it.
 
-This skill changes the handoff boundary. Workers write complete reports to isolated files and return only small receipts containing the report path, coverage state, and finding/evidence counts. A fresh synthesis agent reads those reports and returns the final answer.
+This skill changes the handoff boundary. Workers write complete reports to isolated temp files and return only small receipts containing the report path, coverage state, and finding/evidence counts. A fresh synthesis agent reads those reports and returns the complete final answer directly to the coordinator. The coordinator never opens the sources or reports; after accepting the synthesis, it deletes the exact temp workspace and continues from the merged result.
 
 ## How it works
 
-```mermaid
-flowchart LR
-    U["Research request"] --> M["Main coordinator"]
-    M --> I["Inventory metadata only"]
-    I --> P{"Partition the research"}
-
-    P --> W1["Read-only worker 1"]
-    P --> W2["Read-only worker 2"]
-    P --> W3["Read-only worker 3"]
-
-    W1 --> R1[("worker-01.md")]
-    W2 --> R2[("worker-02.md")]
-    W3 --> R3[("worker-03.md")]
-
-    W1 -. "compact receipt" .-> M
-    W2 -. "compact receipt" .-> M
-    W3 -. "compact receipt" .-> M
-
-    R1 --> S["Fresh synthesis agent"]
-    R2 --> S
-    R3 --> S
-
-    S --> SR[("synthesis.md")]
-    S --> F["Decision-complete final answer"]
-    F --> M
-    M --> U
-
-    classDef coordinator fill:#111827,color:#fff,stroke:#111827
-    classDef worker fill:#dbeafe,color:#1e3a8a,stroke:#60a5fa
-    classDef artifact fill:#dcfce7,color:#14532d,stroke:#4ade80
-    classDef synth fill:#fef3c7,color:#78350f,stroke:#f59e0b
-
-    class M,I,P coordinator
-    class W1,W2,W3 worker
-    class R1,R2,R3,SR artifact
-    class S,F synth
-```
+<p align="center">
+  <img src="./assets/research-swarm-flow.svg" alt="Research Swarm routes a research request through a main coordinator, three read-only workers with isolated report files, and a fresh synthesis agent. Only compact receipts return to the main context." width="100%">
+</p>
 
 ### The context boundary
 
 | Component | Reads raw sources? | Reads worker reports? | Returns to main context |
 |---|---:|---:|---|
-| Main coordinator | Metadata only | No | Research plan + final synthesis |
+| Main coordinator | No — metadata only | No | Orchestration + final synthesis |
 | Read-only workers | Yes, scoped lane only | No | Receipt under 700 characters |
 | Synthesis agent | Only for targeted verification | Yes, all reports | Decision-complete synthesis |
 
@@ -94,7 +60,18 @@ The small JSON receipt is **not** a lossy summary. It is routing and integrity m
 }
 ```
 
-All material findings remain in the worker report. The synthesis contract requires every finding to be represented, deliberately merged, or explicitly excluded with a reason.
+During the run, all material findings remain in worker reports outside the main context. Before cleanup, the synthesis contract requires every finding to be represented, deliberately merged, or explicitly excluded with a reason. The direct synthesis response then becomes the only detailed research state carried forward.
+
+The main context receives only:
+
+```text
+original request
++ minimal orchestration state
++ compact worker receipts
++ decision-complete synthesis
+```
+
+Raw sources, worker reasoning, detailed reports, subagent tool output, and duplicate findings never enter the main context.
 
 ## Measured main-context impact
 
@@ -102,12 +79,9 @@ A validated run used two parallel workers to compare three large skill artifacts
 
 Without report isolation, the two detailed worker reports would have added **7,255 tokens** to the main context. With compact receipts, the intermediate handoff added only **170 tokens**.
 
-```mermaid
-pie showData
-    title Intermediate worker output — o200k_base tokens
-    "Kept outside main context — 7,085" : 7085
-    "Receipts delivered to main — 170" : 170
-```
+<p align="center">
+  <img src="./assets/context-impact.svg" alt="Research Swarm reduces intermediate main-context usage from 7,255 tokens of full worker reports to 170 tokens of compact receipts, a 97.66 percent reduction." width="100%">
+</p>
 
 | Metric | Full worker reports | Compact receipts | Reduction |
 |---|---:|---:|---:|
@@ -115,7 +89,7 @@ pie showData
 | Estimated tokens (`o200k_base`) | 7,255 | 170 | **97.66%** |
 | Tokens kept out of main context | — | — | **7,085** |
 
-The full synthesis preserved the result as **10 merged findings with 0 deliberately excluded findings**.
+The direct final synthesis represented the result as **10 merged findings with 0 deliberately excluded findings**.
 
 > [!IMPORTANT]
 > This is a measurement of **main-context pressure**, not total API usage or billing. Parallel workers may consume more aggregate compute. The required final synthesis is intentionally excluded because both the baseline and optimized design must deliver it.
@@ -137,8 +111,10 @@ The run directory must contain `worker-*.md` and `receipt-*.json` files.
 
 - **Parallel read-only research** using source shards, analytical lenses, or a hybrid partition.
 - **Context-isolated worker reports** stored outside the main conversation.
+- **Ephemeral OS-temp lifecycle** with verified cleanup after synthesis.
 - **Lossless handoff contracts** with finding, evidence, coverage, and gap accounting.
-- **Dedicated synthesis pass** that reads worker artifacts instead of making the main agent reopen them.
+- **Dedicated synthesis pass** that reads worker reports while the main agent waits.
+- **No synthesis artifact**: the complete result returns directly to the main agent.
 - **Evidence-first output** with paths, lines, URLs, commits, and explicit confidence.
 - **Contradiction preservation** rather than majority-voting conflicting claims away.
 - **Bounded concurrency**: normally 2–3 workers, increased only for clean independent lanes.
@@ -149,6 +125,9 @@ The run directory must contain `worker-*.md` and `receipt-*.json` files.
 
 ```text
 research-swarm/
+├── assets/
+│   ├── context-impact.svg
+│   └── research-swarm-flow.svg
 ├── skills/
 │   └── research-swarm/
 │       ├── SKILL.md
@@ -157,7 +136,8 @@ research-swarm/
 ├── benchmarks/
 │   └── validated-run/metrics.json
 ├── scripts/
-│   └── measure_context_savings.py
+│   ├── measure_context_savings.py
+│   └── validate_ephemeral_contract.py
 └── README.md
 ```
 
@@ -231,7 +211,7 @@ into the main context.
 
 Split the reports in ./research across read-only workers. Identify consensus,
 contradictions, unresolved questions, and the five most important decisions.
-Preserve a full synthesis artifact.
+Return one decision-complete synthesis directly and remove all temporary reports.
 ```
 
 ### Inspect independent repository areas
@@ -259,8 +239,11 @@ Work directly when one short source and one narrow question can be answered fast
 
 - Sources and project files remain read-only throughout the research workflow.
 - Workers may write only their assigned temporary report artifact.
-- Shared filesystem access provides the strongest context isolation.
-- Without shared artifact storage, perfect lossless handoff and perfect context isolation cannot both be guaranteed.
+- The main agent opens neither raw sources nor worker reports while the swarm runs.
+- The synthesis agent writes no file; its complete final response returns directly to the main agent.
+- The exact OS temp workspace is deleted and confirmed absent after synthesis or cancellation.
+- Completed worker and synthesis tasks are never reused; their internal contexts do not merge into the main conversation.
+- Without shared temp storage and isolated subagent contexts, the workflow stops rather than silently inflating main context.
 - The skill reduces main-agent context pressure; it does not promise lower total compute usage.
 - Speedup depends on source independence, available concurrency, tool latency, and model limits.
 - Model agreement is not treated as independent source corroboration.

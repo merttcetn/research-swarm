@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="760" viewBox="0 0 1500 760" role="img" aria-labelledby="title desc">
+  <title id="title">Research Swarm context-isolated research flow</title>
+  <desc id="desc">A research request enters the main coordinator, fans out to three read-only workers that write full reports outside the main context, then a fresh synthesis agent returns a decision-ready answer. Workers return only compact receipts to the coordinator.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071018"/>
+      <stop offset="0.55" stop-color="#0A121B"/>
+      <stop offset="1" stop-color="#0B1017"/>
+    </linearGradient>
+    <linearGradient id="coordinatorFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102B38"/>
+      <stop offset="1" stop-color="#0C1C29"/>
+    </linearGradient>
+    <linearGradient id="workerFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#152A4A"/>
+      <stop offset="1" stop-color="#101D32"/>
+    </linearGradient>
+    <linearGradient id="artifactFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#123328"/>
+      <stop offset="1" stop-color="#0C211C"/>
+    </linearGradient>
+    <linearGradient id="synthesisFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B2B14"/>
+      <stop offset="1" stop-color="#251C11"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#B7C9D9" stroke-opacity=".035" stroke-width="1"/>
+    </pattern>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000814" flood-opacity=".35"/>
+    </filter>
+    <marker id="arrowCyan" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0L10 5L0 10Z" fill="#61E8FF"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0L10 5L0 10Z" fill="#7AA2FF"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0L10 5L0 10Z" fill="#7DF6B6"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0L10 5L0 10Z" fill="#FFC96B"/>
+    </marker>
+    <style>
+      .sans { font-family: "IBM Plex Sans", "Segoe UI", sans-serif; }
+      .mono { font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace; }
+      .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 2.2px; }
+      .section { font-size: 13px; font-weight: 700; letter-spacing: 1.8px; }
+      .title { font-size: 31px; font-weight: 650; letter-spacing: -.5px; }
+      .label { font-size: 16px; font-weight: 650; }
+      .small { font-size: 12px; }
+      .tiny { font-size: 11px; }
+    </style>
+  </defs>
+
+  <rect width="1500" height="760" rx="28" fill="url(#bg)"/>
+  <rect x=".5" y=".5" width="1499" height="759" rx="27.5" fill="none" stroke="#273746"/>
+  <rect x="1" y="1" width="1498" height="758" rx="27" fill="url(#grid)"/>
+  <circle cx="1320" cy="90" r="190" fill="#61E8FF" opacity=".025"/>
+  <circle cx="1260" cy="620" r="230" fill="#FFC96B" opacity=".025"/>
+
+  <g class="sans">
+    <text x="64" y="55" class="eyebrow" fill="#61E8FF">01 / RESEARCH CONTROL PLANE</text>
+    <text x="64" y="96" class="title" fill="#F3F7FA">Parallel intake. Isolated detail. One answer.</text>
+    <g transform="translate(1160 44)">
+      <rect width="276" height="40" rx="20" fill="#0D1721" stroke="#31404E"/>
+      <circle cx="22" cy="20" r="5" fill="#7DF6B6" filter="url(#softGlow)"/>
+      <text x="38" y="25" class="mono small" fill="#B9C7D2">READ-ONLY · LOSSLESS · BOUNDED</text>
+    </g>
+  </g>
+
+  <g class="sans">
+    <rect x="54" y="140" width="304" height="548" rx="22" fill="#09131C" fill-opacity=".72" stroke="#24404E"/>
+    <text x="78" y="174" class="section" fill="#61E8FF">MAIN CONTEXT</text>
+    <text x="78" y="197" class="small" fill="#758897">metadata + compact receipts</text>
+
+    <g filter="url(#shadow)">
+      <rect x="82" y="232" width="248" height="72" rx="14" fill="#101A23" stroke="#3A4B59"/>
+      <circle cx="111" cy="268" r="13" fill="#16232E" stroke="#607180"/>
+      <path d="M105 268h12M111 262v12" stroke="#DCE7ED" stroke-width="1.5" stroke-linecap="round"/>
+      <text x="136" y="263" class="tiny mono" fill="#8193A2">INPUT</text>
+      <text x="136" y="283" class="label" fill="#F2F6F8">Research request</text>
+    </g>
+
+    <path d="M206 304V337" stroke="#61E8FF" stroke-width="2" marker-end="url(#arrowCyan)"/>
+
+    <g filter="url(#shadow)">
+      <rect x="82" y="350" width="248" height="110" rx="16" fill="url(#coordinatorFill)" stroke="#61E8FF"/>
+      <rect x="98" y="368" width="56" height="22" rx="11" fill="#61E8FF" fill-opacity=".12"/>
+      <text x="110" y="383" class="mono tiny" fill="#61E8FF">MAIN</text>
+      <text x="98" y="419" class="label" fill="#F5FBFD">Coordinator</text>
+      <text x="98" y="441" class="small" fill="#9FB4C1">frames · partitions · routes</text>
+      <circle cx="299" cy="381" r="7" fill="#61E8FF" filter="url(#softGlow)"/>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect x="82" y="568" width="248" height="84" rx="14" fill="#101A23" stroke="#FFC96B"/>
+      <text x="102" y="596" class="mono tiny" fill="#FFC96B">OUTPUT</text>
+      <text x="102" y="622" class="label" fill="#F8F4EA">Decision-ready answer</text>
+      <path d="M291 598l7 7 14-16" fill="none" stroke="#FFC96B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <g class="sans">
+    <rect x="398" y="140" width="666" height="548" rx="22" fill="#09131C" fill-opacity=".72" stroke="#284237"/>
+    <text x="424" y="174" class="section" fill="#7DF6B6">ISOLATED TEMP WORKSPACE</text>
+    <text x="424" y="197" class="small" fill="#758897">full findings live here until synthesis</text>
+    <g transform="translate(850 157)">
+      <rect width="186" height="28" rx="14" fill="#7DF6B6" fill-opacity=".08" stroke="#2D5C49"/>
+      <text x="19" y="19" class="mono tiny" fill="#8CE7BA">OS TEMP · EPHEMERAL</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect x="438" y="232" width="270" height="100" rx="16" fill="url(#workerFill)" stroke="#6D91E8"/>
+      <circle cx="469" cy="263" r="16" fill="#7AA2FF"/>
+      <text x="460" y="268" class="mono small" fill="#071018">01</text>
+      <text x="497" y="260" class="label" fill="#EDF3FF">Read-only worker</text>
+      <text x="497" y="283" class="small" fill="#9DB1DA">owned source or lens</text>
+      <text x="458" y="311" class="mono tiny" fill="#7892B8">NO DELEGATION · NO SOURCE WRITES</text>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="438" y="364" width="270" height="100" rx="16" fill="url(#workerFill)" stroke="#6D91E8"/>
+      <circle cx="469" cy="395" r="16" fill="#7AA2FF"/>
+      <text x="460" y="400" class="mono small" fill="#071018">02</text>
+      <text x="497" y="392" class="label" fill="#EDF3FF">Read-only worker</text>
+      <text x="497" y="415" class="small" fill="#9DB1DA">owned source or lens</text>
+      <text x="458" y="443" class="mono tiny" fill="#7892B8">NO DELEGATION · NO SOURCE WRITES</text>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="438" y="496" width="270" height="100" rx="16" fill="url(#workerFill)" stroke="#6D91E8"/>
+      <circle cx="469" cy="527" r="16" fill="#7AA2FF"/>
+      <text x="460" y="532" class="mono small" fill="#071018">03</text>
+      <text x="497" y="524" class="label" fill="#EDF3FF">Read-only worker</text>
+      <text x="497" y="547" class="small" fill="#9DB1DA">owned source or lens</text>
+      <text x="458" y="575" class="mono tiny" fill="#7892B8">NO DELEGATION · NO SOURCE WRITES</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect x="782" y="244" width="238" height="76" rx="14" fill="url(#artifactFill)" stroke="#65D89F"/>
+      <path d="M804 261h18l8 8v31h-26z" fill="none" stroke="#7DF6B6" stroke-width="1.5"/>
+      <path d="M822 261v8h8" fill="none" stroke="#7DF6B6" stroke-width="1.5"/>
+      <text x="846" y="276" class="mono small" fill="#7DF6B6">worker-01.md</text>
+      <text x="846" y="298" class="small" fill="#91B9A7">complete findings + evidence</text>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="782" y="376" width="238" height="76" rx="14" fill="url(#artifactFill)" stroke="#65D89F"/>
+      <path d="M804 393h18l8 8v31h-26z" fill="none" stroke="#7DF6B6" stroke-width="1.5"/>
+      <path d="M822 393v8h8" fill="none" stroke="#7DF6B6" stroke-width="1.5"/>
+      <text x="846" y="408" class="mono small" fill="#7DF6B6">worker-02.md</text>
+      <text x="846" y="430" class="small" fill="#91B9A7">complete findings + evidence</text>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="782" y="508" width="238" height="76" rx="14" fill="url(#artifactFill)" stroke="#65D89F"/>
+      <path d="M804 525h18l8 8v31h-26z" fill="none" stroke="#7DF6B6" stroke-width="1.5"/>
+      <path d="M822 525v8h8" fill="none" stroke="#7DF6B6" stroke-width="1.5"/>
+      <text x="846" y="540" class="mono small" fill="#7DF6B6">worker-03.md</text>
+      <text x="846" y="562" class="small" fill="#91B9A7">complete findings + evidence</text>
+    </g>
+
+    <path d="M708 282H768" stroke="#7DF6B6" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    <path d="M708 414H768" stroke="#7DF6B6" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    <path d="M708 546H768" stroke="#7DF6B6" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  </g>
+
+  <g class="sans">
+    <rect x="1104" y="140" width="342" height="548" rx="22" fill="#09131C" fill-opacity=".72" stroke="#514224"/>
+    <text x="1130" y="174" class="section" fill="#FFC96B">SYNTHESIS</text>
+    <text x="1130" y="197" class="small" fill="#758897">fresh context, targeted verification</text>
+
+    <g filter="url(#shadow)">
+      <rect x="1144" y="290" width="262" height="116" rx="17" fill="url(#synthesisFill)" stroke="#EAB758"/>
+      <rect x="1162" y="310" width="64" height="24" rx="12" fill="#FFC96B" fill-opacity=".12"/>
+      <text x="1174" y="326" class="mono tiny" fill="#FFC96B">FRESH</text>
+      <text x="1162" y="362" class="label" fill="#FFF6E6">Synthesis agent</text>
+      <text x="1162" y="385" class="small" fill="#CBB993">merge · verify · preserve dissent</text>
+      <circle cx="1373" cy="322" r="7" fill="#FFC96B" filter="url(#softGlow)"/>
+    </g>
+
+    <path d="M1275 406V470" stroke="#FFC96B" stroke-width="2" marker-end="url(#arrowAmber)"/>
+    <g filter="url(#shadow)">
+      <rect x="1144" y="486" width="262" height="98" rx="16" fill="#171A1A" stroke="#8B7447"/>
+      <text x="1162" y="514" class="mono tiny" fill="#BDA267">DIRECT RETURN</text>
+      <text x="1162" y="541" class="label" fill="#F8F3E7">Decision-complete synthesis</text>
+      <text x="1162" y="563" class="small" fill="#9F9787">all material findings accounted for</text>
+    </g>
+  </g>
+
+  <path d="M330 390C376 390 386 282 424 282" fill="none" stroke="#7AA2FF" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M330 405H424" fill="none" stroke="#7AA2FF" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M330 420C376 420 386 546 424 546" fill="none" stroke="#7AA2FF" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <path d="M438 312C392 312 382 470 330 470" fill="none" stroke="#61E8FF" stroke-opacity=".75" stroke-width="1.5" stroke-dasharray="5 7" marker-end="url(#arrowCyan)"/>
+  <path d="M438 444C390 444 378 484 330 484" fill="none" stroke="#61E8FF" stroke-opacity=".75" stroke-width="1.5" stroke-dasharray="5 7" marker-end="url(#arrowCyan)"/>
+  <path d="M438 576C392 576 380 498 330 498" fill="none" stroke="#61E8FF" stroke-opacity=".75" stroke-width="1.5" stroke-dasharray="5 7" marker-end="url(#arrowCyan)"/>
+  <g class="sans">
+    <rect x="337" y="456" width="91" height="23" rx="11.5" fill="#0C1B25" stroke="#2A6470"/>
+    <text x="351" y="472" class="mono tiny" fill="#61E8FF">≤700 chars</text>
+  </g>
+
+  <path d="M1020 282C1080 282 1092 320 1130 333" fill="none" stroke="#7DF6B6" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <path d="M1020 414C1070 414 1091 374 1130 361" fill="none" stroke="#7DF6B6" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <path d="M1020 546C1080 546 1090 410 1130 389" fill="none" stroke="#7DF6B6" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <path d="M1144 535C1060 535 1083 652 1015 652H351C336 652 330 638 330 624" fill="none" stroke="#FFC96B" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <g class="sans" transform="translate(820 621)">
+    <rect width="174" height="27" rx="13.5" fill="#17170F" stroke="#7F6A37"/>
+    <path d="M15 9h10M18 9V6h4v3M17 12l1 9h6l1-9" fill="none" stroke="#FFC96B" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="35" y="18" class="mono tiny" fill="#D7B969">DELETE TEMP WORKSPACE</text>
+  </g>
+
+  <g class="sans">
+    <g transform="translate(420 708)">
+      <line x1="0" y1="0" x2="38" y2="0" stroke="#7DF6B6" stroke-width="2"/>
+      <text x="50" y="5" class="small" fill="#8595A2">full-fidelity artifact path</text>
+    </g>
+    <g transform="translate(700 708)">
+      <line x1="0" y1="0" x2="38" y2="0" stroke="#61E8FF" stroke-width="1.5" stroke-dasharray="5 6"/>
+      <text x="50" y="5" class="small" fill="#8595A2">compact receipt to main context</text>
+    </g>
+    <g transform="translate(1025 708)">
+      <circle cx="5" cy="0" r="5" fill="#FFC96B"/>
+      <text x="22" y="5" class="small" fill="#8595A2">decision-ready return</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="700" viewBox="0 0 1500 700" role="img" aria-labelledby="title desc">
+  <title id="title">Measured main-context impact of Research Swarm</title>
+  <desc id="desc">Detailed worker reports would add 7,255 tokens to the main context, while compact receipts add only 170 tokens. This is a 97.66 percent reduction, keeping 7,085 tokens outside the main context.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071018"/>
+      <stop offset=".56" stop-color="#09131C"/>
+      <stop offset="1" stop-color="#0C1117"/>
+    </linearGradient>
+    <linearGradient id="before" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF8B65"/>
+      <stop offset="1" stop-color="#FFC96B"/>
+    </linearGradient>
+    <linearGradient id="after" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#61E8FF"/>
+      <stop offset="1" stop-color="#7DF6B6"/>
+    </linearGradient>
+    <linearGradient id="saved" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#173A31"/>
+      <stop offset="1" stop-color="#204D3E"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#B7C9D9" stroke-opacity=".035" stroke-width="1"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#00060D" flood-opacity=".42"/>
+    </filter>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .sans { font-family: "IBM Plex Sans", "Segoe UI", sans-serif; }
+      .mono { font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace; }
+      .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 2.2px; }
+      .headline { font-size: 34px; font-weight: 650; letter-spacing: -.7px; }
+      .kpi { font-size: 62px; font-weight: 700; letter-spacing: -2px; }
+      .number { font-size: 48px; font-weight: 700; letter-spacing: -1.5px; }
+      .label { font-size: 16px; font-weight: 650; }
+      .small { font-size: 13px; }
+      .tiny { font-size: 11px; }
+    </style>
+  </defs>
+
+  <rect width="1500" height="700" rx="28" fill="url(#bg)"/>
+  <rect x=".5" y=".5" width="1499" height="699" rx="27.5" fill="none" stroke="#273746"/>
+  <rect x="1" y="1" width="1498" height="698" rx="27" fill="url(#grid)"/>
+  <circle cx="1280" cy="85" r="220" fill="#7DF6B6" opacity=".035"/>
+
+  <g class="sans">
+    <text x="64" y="54" class="eyebrow" fill="#7DF6B6">02 / VALIDATED BENCHMARK</text>
+    <text x="64" y="98" class="headline" fill="#F3F7FA">Intermediate context, before and after isolation.</text>
+    <g transform="translate(1080 38)">
+      <rect width="356" height="72" rx="18" fill="#0D1917" stroke="#295445"/>
+      <text x="22" y="27" class="mono tiny" fill="#8CB9A5">MAIN-CONTEXT REDUCTION</text>
+      <text x="22" y="58" font-size="30" font-weight="700" fill="#7DF6B6">97.66%</text>
+      <circle cx="321" cy="36" r="12" fill="#7DF6B6" opacity=".16" filter="url(#glow)"/>
+      <path d="M315 36l5 5 9-11" fill="none" stroke="#7DF6B6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <g class="sans" filter="url(#shadow)">
+    <rect x="64" y="146" width="650" height="250" rx="22" fill="#11171D" stroke="#4A3C35"/>
+    <rect x="64" y="146" width="7" height="250" rx="3.5" fill="#FF9A6B"/>
+    <text x="98" y="184" class="mono tiny" fill="#C19A87">NAIVE HANDOFF</text>
+    <text x="98" y="217" class="label" fill="#F0E9E5">Full worker reports enter main context</text>
+    <text x="98" y="284" class="number" fill="#FFF6F1">7,255</text>
+    <text x="263" y="282" class="mono small" fill="#B5A39A">TOKENS</text>
+    <rect x="98" y="324" width="568" height="22" rx="11" fill="#251F1D"/>
+    <rect x="98" y="324" width="568" height="22" rx="11" fill="url(#before)"/>
+    <text x="98" y="370" class="small" fill="#907E75">Two detailed reports carried through the coordinator</text>
+  </g>
+
+  <g class="sans" filter="url(#shadow)">
+    <rect x="786" y="146" width="650" height="250" rx="22" fill="#0D1919" stroke="#28554E"/>
+    <rect x="786" y="146" width="7" height="250" rx="3.5" fill="#61E8FF"/>
+    <text x="820" y="184" class="mono tiny" fill="#7FBEC3">RESEARCH SWARM</text>
+    <text x="820" y="217" class="label" fill="#E8F4F2">Only compact integrity receipts enter</text>
+    <text x="820" y="284" class="number" fill="#F0FFFB">170</text>
+    <text x="920" y="282" class="mono small" fill="#88ABA7">TOKENS</text>
+    <rect x="820" y="324" width="568" height="22" rx="11" fill="#17302D"/>
+    <rect x="820" y="324" width="18" height="22" rx="9" fill="url(#after)" filter="url(#glow)"/>
+    <text x="852" y="340" class="mono tiny" fill="#7DF6B6">2.34% OF BASELINE</text>
+    <text x="820" y="370" class="small" fill="#789B96">Full findings stay isolated until synthesis completes</text>
+  </g>
+
+  <g class="sans">
+    <rect x="64" y="430" width="1372" height="104" rx="18" fill="#0B1518" stroke="#294037"/>
+    <text x="88" y="458" class="mono tiny" fill="#7D948A">WHERE THE 7,255 TOKENS GO</text>
+    <rect x="88" y="478" width="1324" height="22" rx="11" fill="#13231F"/>
+    <rect x="88" y="478" width="1293" height="22" rx="11" fill="url(#saved)"/>
+    <rect x="1381" y="478" width="31" height="22" rx="11" fill="url(#after)"/>
+    <circle cx="100" cy="519" r="5" fill="#7DF6B6"/>
+    <text x="114" y="524" class="small" fill="#A9BBB3">7,085 tokens kept outside main context</text>
+    <circle cx="418" cy="519" r="5" fill="#61E8FF"/>
+    <text x="432" y="524" class="small" fill="#A9BBB3">170 delivered as receipts</text>
+    <text x="1384" y="524" class="mono tiny" text-anchor="end" fill="#719087">o200k_base</text>
+  </g>
+
+  <g class="sans">
+    <g transform="translate(64 568)">
+      <rect width="252" height="84" rx="16" fill="#101820" stroke="#273B48"/>
+      <text x="22" y="31" class="mono tiny" fill="#7692A3">WORKER FINDINGS</text>
+      <text x="22" y="64" font-size="27" font-weight="700" fill="#F3F7FA">31</text>
+    </g>
+    <g transform="translate(332 568)">
+      <rect width="252" height="84" rx="16" fill="#101820" stroke="#273B48"/>
+      <text x="22" y="31" class="mono tiny" fill="#7692A3">EVIDENCE POINTERS</text>
+      <text x="22" y="64" font-size="27" font-weight="700" fill="#F3F7FA">94</text>
+    </g>
+    <g transform="translate(600 568)">
+      <rect width="252" height="84" rx="16" fill="#101820" stroke="#273B48"/>
+      <text x="22" y="31" class="mono tiny" fill="#7692A3">MERGED FINDINGS</text>
+      <text x="22" y="64" font-size="27" font-weight="700" fill="#F3F7FA">10</text>
+    </g>
+    <g transform="translate(868 568)">
+      <rect width="252" height="84" rx="16" fill="#101820" stroke="#273B48"/>
+      <text x="22" y="31" class="mono tiny" fill="#7692A3">DELIBERATELY EXCLUDED</text>
+      <text x="22" y="64" font-size="27" font-weight="700" fill="#7DF6B6">0</text>
+    </g>
+    <g transform="translate(1136 568)">
+      <rect width="300" height="84" rx="16" fill="#151712" stroke="#45452C"/>
+      <text x="22" y="30" class="mono tiny" fill="#A6A575">MEASUREMENT SCOPE</text>
+      <text x="22" y="52" class="small" fill="#D4D2BE">Intermediate handoff only</text>
+      <text x="22" y="72" class="tiny" fill="#858576">final synthesis excluded equally</text>
+    </g>
+  </g>
+</svg>

@@ -1,132 +1,159 @@
 ---
 name: research-swarm
-description: "Split large research and analysis tasks across read-only subagents, keep raw sources and detailed worker notes out of the main agent context, and return one compact evidence-backed synthesis. Use when the user asks to research, inspect, compare, summarize, or extract findings from many files, reports, URLs, repository areas, or from one large source through multiple independent analytical lenses; especially when the user explicitly requests subagents, parallel research, a research swarm, or context-efficient synthesis. Supports Codex and Claude Code. Do not use for simple single-source questions, tightly sequential investigations, or parallel implementation work."
+description: "Orchestrate large research and analysis tasks through parallel read-only subagents without loading raw sources or detailed worker output into the main agent context. Workers write lossless reports only to an ephemeral OS temp workspace and return compact receipts; a fresh synthesis subagent reads those reports and returns one decision-complete result directly to the main agent, which then deletes the workspace. Use for multi-file, multi-URL, repository, report, transcript, comparison, evidence-mapping, or multi-lens research when subagents and context isolation materially help. Supports Codex and Claude Code. Do not use for simple single-source questions, tightly sequential investigations, parallel implementation, or runtimes that merge subagent history into the main context."
 ---
 
 # Research Swarm
 
-Use a map-reduce research workflow: the main agent coordinates, worker subagents inspect sources, and a fresh synthesis subagent combines their reports. Keep implementation and source mutation outside this skill.
+Run an ephemeral map-reduce research workflow. Keep the main agent as an orchestrator, never a researcher: frame the task, partition the scope from metadata, create an OS temp workspace, dispatch workers, wait, dispatch one fresh synthesizer, receive its complete final response, delete the workspace, and continue using only that merged result.
 
-## Core guarantees
+## Non-negotiable guarantees
 
-- Keep every source read-only.
-- Keep detailed worker findings outside the main context whenever a shared filesystem is available.
-- Treat compact receipts as routing and integrity metadata, never as substitutes for research findings.
-- Preserve every material finding in worker reports and in the full synthesis artifact.
-- Give workers disjoint source batches, distinct analytical lenses, or both.
-- Require evidence pointers for material claims.
-- Separate source-backed findings from inference and recommendation.
-- Bound agent count and output size; more agents are not automatically better.
+- Keep source files and external systems read-only.
+- Do not let the main agent open raw source bodies, worker reports, or subagent tool output.
+- Store detailed worker findings only in uniquely named `worker-*.md` files under one exact OS temp directory.
+- Return only compact path/count receipts from workers to the main agent.
+- Return the complete synthesis directly from the synthesis subagent to the main agent.
+- Never create `synthesis.md` or another synthesis artifact inside the research workflow.
+- Delete the exact temp workspace after a complete synthesis is received or after the workflow is abandoned.
+- Do not reuse completed research or synthesis subagents. Their internal contexts must not become main-agent context.
+- Preserve every material finding through the synthesis coverage audit before deleting worker reports.
 - Do not treat agreement between agents as independent source corroboration.
 
-## Adapt to the active runtime
+## Confirm runtime support
 
-- **Codex:** coordinate from the primary agent and dispatch independent workers with the available collaboration/subagent tools. Respect the runtime's concurrency limit.
-- **Claude Code:** coordinate from the main conversation and dispatch workers with the `Agent` tool. Do not set `context: fork` for the coordinator because Claude Code subagents cannot spawn nested subagents.
-- **Other compatible agents:** use their native subagent mechanism only when it can isolate worker activity and return compact receipts. If it cannot share report artifacts, use the compact-return fallback described below.
+Use this workflow only when the runtime:
 
-In every runtime, workers must not delegate further.
+1. isolates subagent context and tool output from the main agent;
+2. lets workers and the synthesizer share files through an OS temp directory; and
+3. returns only each subagent's final response to its parent.
 
-## Decide whether to use the workflow
+If any condition is unavailable, stop and explain that lossless context isolation cannot be guaranteed. Do not fall back to returning detailed worker reports through the main conversation unless the user explicitly accepts the extra context cost.
+
+Adapt dispatch to the runtime:
+
+- **Codex:** coordinate from the primary agent and use the available collaboration/subagent tools. Respect the runtime's concurrency limit.
+- **Claude Code:** coordinate from the main conversation and use the `Agent` tool. Do not put the coordinator in `context: fork`; Claude Code subagents cannot spawn nested subagents.
+- **Other compatible agents:** use their native subagent mechanism only after confirming the three isolation conditions above.
+
+In every runtime, prohibit workers and the synthesizer from delegating further.
+
+## Decide whether to swarm
 
 Use this workflow when at least one condition holds:
 
 - The source set is too large to inspect comfortably in the main context.
 - Two or more independent analytical lenses materially improve the answer.
-- The user explicitly requests subagents or parallel research.
-- The task needs a comparison, evidence map, contradiction check, or cross-source synthesis.
+- The user explicitly requests subagents, parallel research, or context isolation.
+- The task needs comparison, evidence mapping, contradiction checking, or cross-source synthesis.
 
-Work directly when one short source and one narrow question can be handled faster without delegation. If the task mixes research and implementation, complete and present the research synthesis first; implement only when the user separately authorized that work.
+Work directly when one short source and one narrow question are faster without delegation. Keep implementation outside this skill. Complete the synthesis first; implement only when the user separately authorizes it.
 
-## Stage 1: Frame without consuming the corpus
+## Stage 1: Frame from metadata only
 
-1. Restate the research question, decision to support, expected output, and important constraints.
-2. Inventory sources using names, paths, URLs, file sizes, headings, or directory structure. Do not read full source bodies merely to create the inventory.
+1. Restate the research question, decision to support, expected output, and constraints.
+2. Inventory only source metadata such as paths, URLs, filenames, sizes, headings already provided by the user, or directory structure. Do not open source bodies.
 3. Select a partition strategy:
    - **Source shards:** assign disjoint files, URLs, or repository areas.
-   - **Analytical lenses:** assign distinct questions over a shared source, such as facts, risks, workflows, or feasibility.
+   - **Analytical lenses:** assign distinct questions over a shared source.
    - **Hybrid:** shard a large corpus and give each shard the same evidence contract.
-4. Default to 2–3 workers. Increase only when the source set has clean independent lanes and capacity is available. Never exceed the available concurrent subagent slots.
-5. Define what is out of scope so workers do not duplicate adjacent research.
+4. Default to 2–3 workers. Increase only for clean independent lanes and never exceed available concurrency.
+5. Freeze each lane's owned scope, sibling summaries, and exclusions before dispatch.
 
-## Stage 2: Create a context-isolated workspace
+If partitioning requires content inspection, delegate that inspection as a worker lane rather than performing it in the main agent.
 
-When workers share a filesystem, create one narrowly named temporary task directory. Give every worker a unique report path within it. Do not use a broad or user-owned directory as disposable storage.
+## Stage 2: Create the ephemeral workspace
 
-Use this layout:
+Create one narrowly named directory with the operating system's secure temp-directory mechanism, such as `mktemp -d`. Resolve and record its exact absolute path. Never use a repository, workspace root, home directory, or broad user-owned directory as disposable storage.
+
+Use only this runtime layout:
 
 ```text
-<task-dir>/
+<os-temp-task-dir>/
   worker-01.md
   worker-02.md
   worker-03.md
-  synthesis.md
 ```
 
-If no shared filesystem exists, disclose that perfect context isolation and lossless handoff cannot both be guaranteed. Use compact-return mode, reduce worker count, and require complete material findings rather than imposing a word limit that drops evidence.
+Do not create receipt files or a synthesis file. Receipts travel as compact subagent final responses. The synthesizer returns its result directly.
 
-## Stage 3: Dispatch read-only workers
+## Stage 3: Dispatch workers and wait
 
 Read [references/worker-contract.md](references/worker-contract.md) before dispatching.
 
-Give each worker:
+Give every worker:
 
-- The exact research question.
-- Its owned sources or analytical lens.
-- Read-only source boundaries.
-- Its unique report path, when available.
-- A static one-line description of sibling scopes.
-- The required report and receipt formats.
+- the exact research question;
+- one owned source shard or analytical lens;
+- read-only source boundaries;
+- one unique absolute `worker-*.md` path;
+- static one-line sibling scopes; and
+- the worker report and receipt contracts.
 
-Dispatch independent workers concurrently using the active runtime's native subagent mechanism. Instruct workers not to delegate further and not to modify source files. A worker may write only its assigned report artifact.
+Dispatch independent workers concurrently. A worker may write only its assigned report file. Require its final response to contain only the compact receipt.
 
-In filesystem mode, require the final worker response to contain only the compact receipt. The receipt confirms that the full report exists and passed coverage checks; it does not summarize or replace that report. Never ask workers to paste their detailed report into chat.
+After dispatch, the main agent must wait. Do not use the waiting period to open sources, inspect worker files, reproduce research, or perform adjacent investigation. Accept only receipts and minimal orchestration status.
 
-## Stage 4: Run a separate synthesis subagent
+## Stage 4: Dispatch one fresh synthesizer and wait
 
 After all critical workers finish, read [references/synthesis-contract.md](references/synthesis-contract.md).
 
-Start one fresh synthesis subagent using the same runtime mechanism. Give it:
+Start one fresh synthesis subagent with:
 
-- The original user question and desired answer shape.
-- Only the worker report paths, not the raw worker chat output.
-- The synthesis report path.
-- Any failed-worker receipts or known coverage gaps.
+- the original user question and requested output shape;
+- the absolute worker report paths;
+- receipt counts and coverage state;
+- failed or partial lane information; and
+- the synthesis response contract.
 
-Tell the synthesizer to read worker reports first and open raw sources only for targeted evidence verification, unresolved contradictions, or critical missing context. It must not redo the full research.
+Do not give it a synthesis output path. Require it to write no files and return the decision-complete synthesis directly as its final response.
 
-## Stage 5: Return the result
+The synthesizer must read worker reports first. It may open raw sources only for targeted verification of decisive evidence, unresolved contradictions, or a critical gap. It must not redo the full research.
 
-Use the synthesizer's decision-complete final response as the basis of the user-facing answer. Do not reopen all worker reports in the main context. The full `synthesis.md` must retain material details that do not fit the inline answer.
+While synthesis runs, the main agent must wait and must not open sources or worker reports.
 
-Include:
+## Stage 5: Validate the handoff, clean up, and continue
 
-- The direct answer or executive synthesis.
-- The most important findings in priority order.
-- Meaningful disagreements, uncertainty, and missing access.
-- Evidence links or local file pointers.
-- A brief note that parallel read-only research was used.
+Use receipt metadata and the synthesis response's coverage audit to verify:
 
-If the user requested a durable report, preserve or copy `synthesis.md` to the requested location and link it. If the inline answer omits any material detail, retain and link `synthesis.md` even when the user did not explicitly request a file. Clean up only the exact temporary task directory, and only after no retained report depends on it.
+- every expected worker report was read;
+- every worker finding was represented, deliberately merged, or explicitly excluded with a reason;
+- material contradictions and gaps remain visible; and
+- the response is complete enough to be the sole research state carried forward.
 
-## Failure handling
+If the coverage audit is incomplete, send one corrective follow-up to the same synthesizer while the temp reports still exist. Do not make the main agent inspect the reports.
 
-- If a non-critical worker fails, continue and disclose the coverage gap.
-- If a critical lane fails, retry once with a narrower scope or replace that worker.
-- If workers overlap heavily, do not count repeated claims as stronger evidence.
-- If reports conflict, preserve both claims and ask the synthesizer to resolve them from primary evidence when possible.
-- If a worker violates the compact receipt contract, do not echo its long response to the user; request a compact correction only if its report artifact is missing.
-- If the user redirects the task, stop using stale worker results.
+After accepting the synthesis:
+
+1. Treat the synthesizer's final response as the only detailed research content added to main context.
+2. Resolve the recorded temp path again and confirm it is the exact task directory under the OS temp area.
+3. Delete that exact directory and all worker reports.
+4. Confirm the directory no longer exists.
+5. Close or release completed subagent tasks when the runtime supports explicit closure; never reuse or message the completed workers or synthesizer.
+6. Return or continue from the merged synthesis without reopening sources.
+
+Research Swarm never creates a durable synthesis artifact. If the user separately requested a durable document, create it only after cleanup as a separate authorized task using the returned synthesis.
+
+## Failure and interruption handling
+
+- Continue past a non-critical worker failure and disclose the gap to the synthesizer.
+- Retry a critical worker once with narrower scope before synthesis.
+- Preserve conflicting claims instead of majority-voting them away.
+- If a worker returns prose instead of a receipt, request a compact correction only when its report exists; never ask it to repeat detailed findings.
+- If synthesis fails, retry once while the worker reports still exist.
+- If the user redirects or cancels the task, stop using pending results, end the subagent tasks when supported, and delete the exact temp workspace.
+- If cleanup fails, retry only against the validated exact temp path. Report the remaining path and do not claim the workflow completed until it is removed.
 
 ## Quality gate
 
-Before answering, ensure:
+Before returning control, ensure:
 
-- Every major claim has at least one evidence pointer.
-- Coverage and inaccessible sources are explicit.
-- Fact, inference, and recommendation are distinguishable.
-- Duplicate findings are merged without hiding disagreement.
-- Worker receipts report complete finding and evidence counts instead of carrying a lossy mini-summary.
-- The full synthesis preserves material findings even when the inline answer is shorter.
-- The answer fits the user's requested depth.
-- No source was modified and no implementation was performed under this research-only workflow.
+- The main agent opened no raw source body and no worker report.
+- Worker final responses contained receipts rather than findings.
+- The synthesis subagent wrote no files and returned a decision-complete result directly.
+- Every material worker finding was accounted for in the coverage audit.
+- Fact, inference, recommendation, contradiction, and missing access remain distinguishable.
+- No `synthesis.md` or durable research artifact was created.
+- The exact temp workspace was deleted and confirmed absent.
+- Completed subagents were not reused.
+- No source was modified and no implementation occurred under this research-only workflow.

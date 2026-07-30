@@ -1,6 +1,6 @@
 # Synthesis Contract
 
-Use this contract for the final synthesis subagent.
+Use this contract for the one fresh synthesis subagent. Its final response becomes the main agent's sole detailed research state after the temp worker reports are deleted.
 
 ## Required prompt sections
 
@@ -8,70 +8,81 @@ Use this contract for the final synthesis subagent.
 ## User question
 <original question and requested output shape>
 
-## Inputs
-- <worker report path>
-- <worker report path>
+## Worker reports
+- <absolute worker report path>
+- <absolute worker report path>
+
+## Receipt totals
+- expected_reports: <count>
+- completed_reports: <count>
+- worker_findings: <sum>
+- worker_evidence_pointers: <sum>
 
 ## Known gaps
 - <failed, partial, or inaccessible lane>
 
 ## Boundaries
-- Read worker reports before opening raw sources.
-- Open raw sources only to verify critical evidence, resolve contradictions, or fill a decisive gap.
-- Do not redo every worker's research.
-- Do not modify source files or implement recommendations.
-- Write the full synthesis only to: <synthesis path>
+- Read every available worker report before synthesizing.
+- Open raw sources only for targeted verification of decisive evidence, unresolved contradictions, or a critical gap.
+- Do not redo the workers' full research.
+- Do not modify sources or project files.
+- Do not write a synthesis file or any other artifact.
+- Return the complete synthesis directly as your final response.
 ```
 
 ## Synthesis procedure
 
-1. Confirm which lanes and sources were covered.
-2. Normalize semantically equivalent findings.
-3. Rank findings by relevance to the user question, not by repetition count.
-4. Preserve meaningful disagreement.
-5. Distinguish:
+1. Confirm expected, available, and partial worker reports.
+2. Read every available report.
+3. Normalize semantically equivalent findings without treating repetition as corroboration.
+4. Rank findings by relevance to the user question.
+5. Preserve meaningful disagreement and identify what would resolve it.
+6. Distinguish:
    - **Established:** directly supported by evidence.
    - **Inferred:** reasoned from evidence but not explicitly established.
-   - **Recommended:** proposed next action.
-6. Verify only the small number of evidence pointers necessary to support decisive claims.
-7. Check that every material worker finding is represented, deliberately merged, or explicitly excluded with a reason.
-8. Write the detailed synthesis report.
-9. Return a decision-complete, user-ready answer without exposing internal coordination details.
+   - **Recommended:** a proposed next action.
+7. Verify only the evidence necessary for decisive claims or unresolved contradictions.
+8. Account for every material worker finding as represented, deliberately merged, or deliberately excluded with a reason.
+9. Produce a decision-complete response that can replace the temporary reports as the sole research state.
+10. Return that response directly. Write no files.
 
-## Detailed synthesis format
+## Final response shape
 
 ```markdown
 # <Research title>
 
-## Executive synthesis
-<direct answer>
+## Direct answer
+<decision-complete answer to the user question>
 
-## Priority findings
-1. <finding + evidence>
+## Findings
+1. <material finding + evidence pointer + confidence/type when useful>
 
 ## Agreements and contradictions
-- <what aligns, what conflicts, and why>
+- <what aligns, what conflicts, and what would resolve it>
 
 ## Gaps and confidence
-- <coverage limitation>
+- <coverage limitation and impact>
 
 ## Recommended next actions
 1. <action tied to evidence>
 
-## Source map
+## Evidence map
 - <source pointer and what it supported>
+
+## Coverage audit
+- worker_reports_expected: <count>
+- worker_reports_read: <count>
+- worker_findings_received: <count>
+- synthesized_findings: <count>
+- deliberately_excluded_findings: <count and reasons>
+- unresolved_gaps: <count and short labels>
 ```
 
-## Final response contract
+## Completeness rules
 
-Return:
-
-- A direct answer first.
-- A concise inline synthesis, normally 500–800 words, without omitting information needed for the user's decision.
-- Up to seven priority findings.
-- Material uncertainty or missing coverage.
-- Evidence pointers usable by the main agent.
-- The synthesis report path.
-- The total worker finding count, merged finding count, and any deliberately excluded items.
-
-If all material findings cannot fit inline, keep them in `synthesis.md` and make the report path prominent. Do not include raw worker reports, worker prompts, or lengthy process narration.
+- Include every material detail needed for the user's decision. Expand the final response rather than writing an artifact or silently omitting findings.
+- Merge duplicates, but preserve unique evidence, disagreement, uncertainty, and material caveats.
+- Keep evidence pointers usable after the ephemeral worker reports are deleted. Cite original paths, URLs, commits, or other stable source locations rather than worker report paths.
+- Do not include worker prompts, raw worker reports, reasoning traces, tool logs, receipt JSON, or temporary paths.
+- Do not return a synthesis path. No synthesis file exists.
+- End only after the coverage audit proves that all material worker findings were handled.
