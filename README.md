@@ -98,14 +98,18 @@ Token counts use OpenAI's `o200k_base` tokenizer as a reproducible estimate. Dif
 
 Raw benchmark data: [`benchmarks/validated-run/metrics.json`](./benchmarks/validated-run/metrics.json)
 
-Re-run the measurement on any compatible research run:
+Run the static documentation check and the measurement utility through temporary or explicitly supplied fixtures:
 
 ```bash
+python scripts/validate_ephemeral_contract.py
+
 uv run --with tiktoken \
   python scripts/measure_context_savings.py /path/to/run-directory
 ```
 
-The run directory must contain `worker-*.md` and `receipt-*.json` files.
+`measure_context_savings.py` requires paired, nonempty `worker-*.md` reports and structurally valid `receipt-*.json` files whose identifiers, absolute report paths, and byte counts match. These inputs are synthetic benchmark/test fixtures or an already-existing temporary measurement run—not permission to create durable workflow artifacts or retain receipts/reports after cleanup. Keep synthetic fixtures under an OS-temp directory and remove them after measurement.
+
+The script measures only the intermediate worker-report-to-main-context handoff. It does not measure total API usage, billing, quota, aggregate worker compute, or the final synthesis, and it does not observe a live run. `validate_ephemeral_contract.py` checks required and forbidden documentation fragments only; its pass result does not verify runtime context isolation, subagent behavior, file creation, or cleanup.
 
 ## Features
 

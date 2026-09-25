@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Research Swarm's ephemeral context-isolation contract."""
+"""Check Research Swarm's documented ephemeral-contract invariants."""
 
 from __future__ import annotations
 
@@ -115,14 +115,19 @@ def main() -> None:
 
     result = {
         "status": "passed",
-        "invariants": {
-            "main_agent_researches": False,
-            "worker_chat_contains_findings": False,
-            "synthesis_file_created": False,
-            "synthesis_returns_directly": True,
-            "temp_cleanup_required": True,
-            "completed_agents_reused": False,
+        "scope": "static documentation fragment checks only",
+        "runtime_lifecycle_verified": False,
+        "documented_contract": {
+            "main_agent_researches": "forbidden",
+            "worker_chat_contains_findings": "forbidden",
+            "synthesis_file_created": "forbidden",
+            "synthesis_returns_directly": "required",
+            "temp_cleanup_required": "required",
+            "completed_agents_reused": "forbidden",
         },
+        "cleanup_verification": (
+            "Not performed here; runtime orchestration must verify the exact path is absent"
+        ),
         "files_checked": 5,
     }
     print(json.dumps(result, indent=2))
